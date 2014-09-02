@@ -5,15 +5,21 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import org.nus.cs5223.game.util.Utils;
+import org.nus.cs5223.game.vo.Message;
+
 public class ClientMessenger {
 
-	public static void sendMessage(String ip, int port, String message) {
+	private static final int SERVER_PORT = 7777;
+
+	public static void sendMessage(Message message) {
 		Socket socket;
+		String str = Utils.toJson(message);
 		try {
-			socket = new Socket(ip, port);
+			socket = new Socket(getServerIp(), SERVER_PORT);
 			DataOutputStream dOut = new DataOutputStream(
 					socket.getOutputStream());
-			dOut.writeUTF(message);
+			dOut.writeUTF(str);
 			dOut.flush();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -22,5 +28,10 @@ public class ClientMessenger {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private static String getServerIp() {
+		// TODO Auto-generated method stub
+		return "localhost";
 	}
 }

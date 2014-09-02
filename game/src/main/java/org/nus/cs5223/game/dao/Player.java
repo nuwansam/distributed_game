@@ -6,6 +6,10 @@ public class Player {
 	private int currentLocation;
 	private int numTreasuresCollected;
 
+	public Player(String playerId) {
+		this.id = playerId;
+	}
+
 	public String getId() {
 		return id;
 	}
