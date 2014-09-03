@@ -1,16 +1,43 @@
 package org.nus.cs5223.game.vo;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import org.nus.cs5223.game.util.Utils;
 
-public abstract class Message implements Serializable {
+public class Message implements Serializable {
 
 	private String id;
 	private String playerId;
+	private String originIp;
+	private int responsePort;
+
+	public int getResponsePort() {
+		return responsePort;
+	}
+
+	public void setResponsePort(int responsePort) {
+		this.responsePort = responsePort;
+	}
+
+	public String getOriginIp() {
+		return originIp;
+	}
+
+	public void setOriginIp(String originIp) {
+		this.originIp = originIp;
+	}
 
 	public Message() {
 		this.setId(Utils.getMessageId());
+		try {
+			setOriginIp(InetAddress.getLocalHost().getHostAddress());
+			setResponsePort(Utils.LISTEN_PORT);
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public String getId() {

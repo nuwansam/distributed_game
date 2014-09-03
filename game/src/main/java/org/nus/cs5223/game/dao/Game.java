@@ -1,15 +1,25 @@
 package org.nus.cs5223.game.dao;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import org.nus.cs5223.game.exceptions.PlayerAddWindowExpiredException;
 
 public class Game {
 
+	private static final long PLAYER_ADD_WINDOW = 20000;
+	private long startTime;
 	private String id;
-	private int N;
+	private int boardDimension;
 	private int numTreasures;
 	private List<Integer> treasures;
 	private List<Player> players;
+
+	public Game() {
+		startTime = System.currentTimeMillis();
+		players = new ArrayList<Player>();
+		treasures = new ArrayList<Integer>();
+	}
 
 	public List<Player> getPlayers() {
 		return players;
@@ -27,12 +37,12 @@ public class Game {
 		this.id = id;
 	}
 
-	public int getN() {
-		return N;
+	public int getBoardDimension() {
+		return boardDimension;
 	}
 
-	public void setN(int n) {
-		N = n;
+	public void setBoardDimension(int boardDimension) {
+		this.boardDimension = boardDimension;
 	}
 
 	public int getNumTreasures() {
@@ -49,6 +59,18 @@ public class Game {
 
 	public void setTreasures(List<Integer> treasures) {
 		this.treasures = treasures;
+	}
+
+	public void addPlayer(String playerId)
+			throws PlayerAddWindowExpiredException {
+		if (System.currentTimeMillis() - PLAYER_ADD_WINDOW > startTime) {
+			throw new PlayerAddWindowExpiredException();
+		}
+		Player player = new Player(playerId);
+		player.setCurrentLocation((int) (Math.random() * (boardDimension
+				* boardDimension - 1)));
+		player.setNumTreasuresCollected(0);
+		players.add(player);
 	}
 
 }

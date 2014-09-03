@@ -1,7 +1,9 @@
 package org.nus.cs5223.game.util;
 
 import java.awt.Point;
+import java.net.SocketImpl;
 
+import org.apache.log4j.Logger;
 import org.nus.cs5223.game.vo.Message;
 
 import com.google.gson.Gson;
@@ -9,6 +11,8 @@ import com.google.gson.Gson;
 public class Utils {
 
 	private static Gson gson = new Gson();
+	private static final Logger log = Logger.getLogger(Utils.class);
+	public static final int LISTEN_PORT = 8888;
 
 	public static int getCellNo(int r, int c, int N) {
 		return r * N + c;
@@ -25,7 +29,13 @@ public class Utils {
 		return gson.toJson(obj);
 	}
 
-	public static Object fromJson(String json) {
+	public static Object fromJson(String json, String messageType) {
+		try {
+			Class<?> className = Class.forName(messageType);
+			return gson.fromJson(json, className);
+		} catch (ClassNotFoundException e) {
+			log.error(e);
+		}
 		return gson.fromJson(json, Message.class);
 	}
 

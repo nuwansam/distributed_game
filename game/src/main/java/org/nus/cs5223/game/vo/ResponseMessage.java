@@ -6,6 +6,11 @@ public class ResponseMessage extends Message {
 
 	private Game game;
 
+	public ResponseMessage(Game game) {
+		super();
+		this.game = game;
+	}
+
 	public Game getGame() {
 		return game;
 	}
