@@ -10,12 +10,40 @@ import org.springframework.stereotype.Component;
 @Component
 public class GameManager {
 
+	public static final int IS_SERVER = 0;
+	public static final int IS_BACKUP = 1;
+	public static final int IS_CLIENT = 2;
+
+	private int serverStatus;
+
+	private String backupIp;
+
 	private int boardDimension, numTreasures;
 	private static final Logger log = Logger.getLogger(GameManager.class);
 	private Game game;
 
+	public String getBackupIp() {
+		return backupIp;
+	}
+
+	public void setBackupIp(String backupIp) {
+		this.backupIp = backupIp;
+	}
+
+	public void setGame(Game game) {
+		this.game = game;
+	}
+
 	public GameManager() {
 
+	}
+
+	public int getServerStatus() {
+		return serverStatus;
+	}
+
+	public void setServerStatus(int serverStatus) {
+		this.serverStatus = serverStatus;
 	}
 
 	public int getBoardDimension() {

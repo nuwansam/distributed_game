@@ -12,6 +12,7 @@ public class Message implements Serializable {
 	private String playerId;
 	private String originIp;
 	private int responsePort;
+	private long originTime;
 
 	public int getResponsePort() {
 		return responsePort;
@@ -31,6 +32,7 @@ public class Message implements Serializable {
 
 	public Message() {
 		this.setId(Utils.getMessageId());
+		this.setOriginTime(System.currentTimeMillis());
 		try {
 			setOriginIp(InetAddress.getLocalHost().getHostAddress());
 			setResponsePort(Utils.LISTEN_PORT);
@@ -54,6 +56,14 @@ public class Message implements Serializable {
 
 	public void setPlayerId(String playerId) {
 		this.playerId = playerId;
+	}
+
+	public long getOriginTime() {
+		return originTime;
+	}
+
+	public void setOriginTime(long originTime) {
+		this.originTime = originTime;
 	}
 
 }
