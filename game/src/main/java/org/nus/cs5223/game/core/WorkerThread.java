@@ -6,6 +6,7 @@ import org.nus.cs5223.game.exceptions.PlayerAddWindowExpiredException;
 import org.nus.cs5223.game.vo.ErrorMessage;
 import org.nus.cs5223.game.vo.JoinGameMessage;
 import org.nus.cs5223.game.vo.Message;
+import org.nus.cs5223.game.vo.MoveMessage;
 import org.nus.cs5223.game.vo.ResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,6 +61,13 @@ public class WorkerThread implements Runnable {
 			}
 		} else if (message instanceof ResponseMessage) {
 			log.info("Received response message: " + message.getId());
+		} else if (message instanceof MoveMessage) {
+			Game game = gameFactory.getGame();
+			game.movePlayer(message.getPlayerId(),
+					((MoveMessage) message).getDirection());
+			Messenger.sendMessage(message.getOriginIp(),
+					message.getResponsePort(),
+					new ResponseMessage(gameFactory.getGame()));
 		}
 		System.out.println("Received message: " + message.getId());
 	}

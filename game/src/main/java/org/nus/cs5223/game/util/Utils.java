@@ -12,10 +12,10 @@ public class Utils {
 
 	private static Gson gson = new Gson();
 	private static final Logger log = Logger.getLogger(Utils.class);
-	public static final int LISTEN_PORT = 8888;
+	public static final int LISTEN_PORT = 7777;
 
-	public static int getCellNo(int r, int c, int N) {
-		return r * N + c;
+	public static int getCellNo(Point point, int N) {
+		return point.y * N + point.x;
 	}
 
 	public static Point getPosition(int cellNo, int N) {

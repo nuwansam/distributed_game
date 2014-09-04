@@ -2,6 +2,7 @@ package org.nus.cs5223.game.vo;
 
 public class MoveMessage extends Message {
 
+	public static final int NO_MOVE = 4;
 	public static int NORTH = 0;
 	public static int EAST = 1;
 	public static int SOUTH = 2;

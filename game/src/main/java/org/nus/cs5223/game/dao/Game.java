@@ -1,9 +1,12 @@
 package org.nus.cs5223.game.dao;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.nus.cs5223.game.exceptions.PlayerAddWindowExpiredException;
+import org.nus.cs5223.game.util.Utils;
+import org.nus.cs5223.game.vo.MoveMessage;
 
 public class Game {
 
@@ -71,6 +74,45 @@ public class Game {
 				* boardDimension - 1)));
 		player.setNumTreasuresCollected(0);
 		players.add(player);
+	}
+
+	public void movePlayer(String playerId, int direction) {
+		Player player = getPlayer(playerId);
+		Point point = Utils.getPosition(player.getCurrentLocation(),
+				getBoardDimension());
+		if (direction == MoveMessage.NO_MOVE) {
+			return;
+		}
+		if (direction == MoveMessage.NORTH && point.y > 0) {
+			point.y--;
+		}
+		if (direction == MoveMessage.WEST && point.x > 0) {
+			point.x--;
+		}
+		if (direction == MoveMessage.SOUTH && point.y < boardDimension - 1) {
+			point.y++;
+		}
+		if (direction == MoveMessage.EAST && point.x < boardDimension - 1) {
+			point.x++;
+		}
+		int cellNo = Utils.getCellNo(point, boardDimension);
+		player.setCurrentLocation(cellNo);
+		for (Integer treasure : treasures) {
+			if (treasure == cellNo) {
+				player.setNumTreasuresCollected(player
+						.getNumTreasuresCollected() + 1);
+				treasures.remove(new Integer(treasure));
+				break;
+			}
+		}
+	}
+
+	private Player getPlayer(String playerId) {
+		for (Player t : players) {
+			if (t.getId().equals(playerId))
+				return t;
+		}
+		return null;
 	}
 
 }
