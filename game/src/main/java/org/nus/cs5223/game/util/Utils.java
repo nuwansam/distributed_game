@@ -1,7 +1,9 @@
 package org.nus.cs5223.game.util;
 
 import java.awt.Point;
+import java.net.InetAddress;
 import java.net.SocketImpl;
+import java.net.UnknownHostException;
 
 import org.apache.log4j.Logger;
 import org.nus.cs5223.game.vo.Message;
@@ -16,6 +18,17 @@ public class Utils {
 
 	public static int getCellNo(Point point, int N) {
 		return point.y * N + point.x;
+	}
+
+	public static String getMyIp() {
+		try {
+			return InetAddress.getLocalHost().getHostAddress()
+					+ Utils.LISTEN_PORT;
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	public static Point getPosition(int cellNo, int N) {
@@ -40,7 +53,7 @@ public class Utils {
 	}
 
 	public static String createPlayerId(String name) {
-		return "ply_" + name;
+		return name;
 	}
 
 	public static String getMessageId() {

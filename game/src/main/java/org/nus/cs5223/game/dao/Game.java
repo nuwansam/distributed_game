@@ -64,20 +64,27 @@ public class Game {
 		this.treasures = treasures;
 	}
 
-	public void addPlayer(String playerId)
+	public synchronized void addPlayer(String playerId)
 			throws PlayerAddWindowExpiredException {
 		if (System.currentTimeMillis() - PLAYER_ADD_WINDOW > startTime) {
 			throw new PlayerAddWindowExpiredException();
 		}
 		Player player = new Player(playerId);
-		player.setCurrentLocation((int) (Math.random() * (boardDimension
-				* boardDimension - 1)));
+		while (true) {
+			int location = (int) (Math.random() * (boardDimension
+					* boardDimension - 1));
+			if (!playerExists(location)) {
+				player.setCurrentLocation(location);
+				break;
+			}
+		}
 		player.setNumTreasuresCollected(0);
 		players.add(player);
 	}
 
-	public void movePlayer(String playerId, int direction) {
+	public synchronized void movePlayer(String playerId, int direction) {
 		Player player = getPlayer(playerId);
+		player.setPreviousLocation(player.getCurrentLocation());
 		Point point = Utils.getPosition(player.getCurrentLocation(),
 				getBoardDimension());
 		if (direction == MoveMessage.NO_MOVE) {
@@ -96,6 +103,8 @@ public class Game {
 			point.x++;
 		}
 		int cellNo = Utils.getCellNo(point, boardDimension);
+		if (playerExists(cellNo))
+			return;
 		player.setCurrentLocation(cellNo);
 		for (Integer treasure : treasures) {
 			if (treasure == cellNo) {
@@ -105,6 +114,14 @@ public class Game {
 				break;
 			}
 		}
+	}
+
+	private boolean playerExists(int cellNo) {
+		for (Player player : players) {
+			if (player.getCurrentLocation() == cellNo)
+				return true;
+		}
+		return false;
 	}
 
 	private Player getPlayer(String playerId) {

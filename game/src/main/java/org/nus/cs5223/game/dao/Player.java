@@ -4,7 +4,23 @@ public class Player {
 
 	private String id;
 	private int currentLocation;
+	private int previousLocation;
 	private int numTreasuresCollected;
+
+	public boolean equals(Object o) {
+		if (o instanceof Player) {
+			return ((Player) o).getId().equals(getId());
+		}
+		return false;
+	}
+
+	public int getPreviousLocation() {
+		return previousLocation;
+	}
+
+	public void setPreviousLocation(int previousLocation) {
+		this.previousLocation = previousLocation;
+	}
 
 	public Player(String playerId) {
 		this.id = playerId;
