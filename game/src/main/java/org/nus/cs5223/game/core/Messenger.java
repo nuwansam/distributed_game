@@ -9,13 +9,18 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 import org.nus.cs5223.game.util.Utils;
+import org.nus.cs5223.game.vo.GameSyncMessage;
+import org.nus.cs5223.game.vo.JoinGameMessage;
 import org.nus.cs5223.game.vo.Message;
+import org.nus.cs5223.game.vo.MoveMessage;
 import org.nus.cs5223.game.vo.ResponseMessage;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,10 +29,23 @@ public class Messenger {
 	private static final int SERVER_PORT = 7777;
 	private static final Logger log = Logger.getLogger(Messenger.class);
 	private static final long MAX_RESPONSE_DELAY = 4000;
-	public static List<Message> responseTracked = new ArrayList<Message>();
+	public static List<Message> responseTracked;
 
 	private String serverIp;
 	private String backupIp;
+
+	@Autowired
+	GameManager gameManager;
+	private String playerId;
+
+	
+	public String getPlayerId() {
+		return playerId;
+	}
+
+	public void setPlayerId(String playerId) {
+		this.playerId = playerId;
+	}
 
 	public String getServerIp() {
 		return serverIp;
@@ -50,6 +68,7 @@ public class Messenger {
 	}
 
 	public Messenger() {
+		responseTracked = new ArrayList<Message>();
 		Timer timer = new Timer();
 		Date date = Calendar.getInstance().getTime();
 		TimerTask task = new TimerTask() {
@@ -57,34 +76,73 @@ public class Messenger {
 			@Override
 			public void run() {
 				checkResponseTracker();
-
 			}
 		};
-		timer.scheduleAtFixedRate(task, date, 1000);
+		timer.scheduleAtFixedRate(task, date, 3000);
+	}
+
+	private void scheduleNoMoveMsgSend() {
+		Timer timer = new Timer();
+		Calendar c= Calendar.getInstance();
+		c.add(Calendar.SECOND, 25);
+		Date date=c.getTime();
+		TimerTask task = new TimerTask() {
+
+			@Override
+			public void run() {
+				sendNoMoveMsg();
+			}
+		};
+		 timer.scheduleAtFixedRate(task, date, 25000);
+
+	}
+
+	protected void sendNoMoveMsg() {
+		MoveMessage msg = new MoveMessage();
+		msg.setPlayerId(playerId);
+		msg.setDirection(MoveMessage.NO_MOVE);
+		sendMessage(msg, true);
 	}
 
 	protected void checkResponseTracker() {
-		Iterator<Message> it = responseTracked.iterator();
-		Message message;
-		while (it.hasNext()) {
-			message = it.next();
-			if (message.getOriginTime() + MAX_RESPONSE_DELAY < System
-					.currentTimeMillis()) {
-				// no response. server is down
-				serverIp = backupIp;
-				sendMessage(message, true);
-				it.remove();
+		synchronized (responseTracked) {
+			Iterator<Message> it = responseTracked.iterator();
+			Message message;
+			while (it.hasNext()) {
+				message = it.next();
+				if (message.getOriginTime() + MAX_RESPONSE_DELAY < System
+						.currentTimeMillis()) {
+					if (message instanceof GameSyncMessage) {
+						// backup is down. im the server and my game sync
+						// message
+						// didnt get a response
+						gameManager.setBackupIp("");
+					}
+					// no response. server is down
+					serverIp = backupIp;
+					log.info("Resending message: " + message.getId());
+					sendMessage(message, true);
+					it.remove();
+				}
 			}
 		}
 	}
 
 	public void sendMessage(Message message, boolean checkReply) {
+		if (serverIp == null || serverIp.isEmpty()) {
+			serverIp = "localhost:" + Utils.LISTEN_PORT;
+		}
 		String[] strs = serverIp.split(":");
+		log.info("SERVER IP:" + serverIp);
 		sendMessage(strs[0], Integer.parseInt(strs[1]), message, checkReply);
 	}
 
 	public void sendMessage(String ip, int port, Message message,
 			boolean checkReply) {
+		if (message instanceof JoinGameMessage) {
+			scheduleNoMoveMsgSend();
+		}
+
 		Socket socket;
 		String obj = Utils.toJson(message);
 		String messageType = getMessageType(message);
@@ -97,7 +155,9 @@ public class Messenger {
 			dOut.writeUTF(str);
 			dOut.flush();
 			if (checkReply) {
-				responseTracked.add(message);
+				synchronized (responseTracked) {
+					responseTracked.add(message);
+				}
 			}
 		} catch (UnknownHostException e) {
 			log.error(e);
@@ -107,11 +167,20 @@ public class Messenger {
 	}
 
 	public void updateResponseTracker(Message message) {
-		responseTracked.remove(message);
+		synchronized (responseTracked) {
+			log.info("Removing msg: " + message.getId());
+			responseTracked.remove(message);
+		}
 		if (message instanceof ResponseMessage) {
 			setServerIp(((ResponseMessage) message).getServerIp());
 			setBackupIp(((ResponseMessage) message).getBackupIp());
 		}
+	}
+
+	public void sendMessage(String receiverIp, Message message,
+			boolean checkReply) {
+		String[] strs = receiverIp.split(":");
+		sendMessage(strs[0], Integer.parseInt(strs[1]), message, checkReply);
 	}
 
 }

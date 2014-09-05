@@ -14,7 +14,7 @@ public class Utils {
 
 	private static Gson gson = new Gson();
 	private static final Logger log = Logger.getLogger(Utils.class);
-	public static final int LISTEN_PORT = 7777;
+	public static final int LISTEN_PORT = 8888;
 
 	public static int getCellNo(Point point, int N) {
 		return point.y * N + point.x;
@@ -22,7 +22,7 @@ public class Utils {
 
 	public static String getMyIp() {
 		try {
-			return InetAddress.getLocalHost().getHostAddress()
+			return InetAddress.getLocalHost().getHostAddress() + ":"
 					+ Utils.LISTEN_PORT;
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block

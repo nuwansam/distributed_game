@@ -1,10 +1,13 @@
 package org.nus.cs5223.game.core;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.nus.cs5223.game.dao.Game;
+import org.nus.cs5223.game.vo.Message;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,7 +19,9 @@ public class GameManager {
 
 	private int serverStatus;
 
-	private String backupIp;
+	private Set<String> messagesReceived;
+
+	private String backupIp="";
 
 	private int boardDimension, numTreasures;
 	private static final Logger log = Logger.getLogger(GameManager.class);
@@ -35,7 +40,7 @@ public class GameManager {
 	}
 
 	public GameManager() {
-
+		messagesReceived = new HashSet<String>();
 	}
 
 	public int getServerStatus() {
@@ -92,6 +97,14 @@ public class GameManager {
 
 	private String createGameId() {
 		return System.currentTimeMillis() + "";
+	}
+
+	public void addMessagesReceived(Message lastMessage) {
+		messagesReceived.add(lastMessage.getId());
+	}
+
+	public boolean messageProcessed(Message message) {
+		return messagesReceived.contains(message.getId());
 	}
 
 }

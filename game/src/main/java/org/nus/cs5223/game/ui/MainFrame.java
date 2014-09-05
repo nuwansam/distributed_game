@@ -36,7 +36,6 @@ public class MainFrame extends JFrame {
 	JTextArea txtLog;
 	JTextField txtMove;
 	JTable board;
-	String playerId;
 	DefaultTableModel boardModel;
 
 	@Autowired
@@ -148,31 +147,26 @@ public class MainFrame extends JFrame {
 		Point point;
 		boardModel.setColumnCount(game.getBoardDimension());
 		boardModel.setRowCount(game.getBoardDimension());
+		for (int i = 0; i < game.getBoardDimension(); i++) {
+			for (int j = 0; j < game.getBoardDimension(); j++) {
+				boardModel.setValueAt("", i, j);
+			}
+		}
 		for (Integer t : game.getTreasures()) {
 			point = Utils.getPosition(t, game.getBoardDimension());
 			boardModel.setValueAt("T", point.y, point.x);
-			boardModel.fireTableCellUpdated(point.y, point.x);
 		}
 		for (Player p : game.getPlayers()) {
 			point = Utils.getPosition(p.getCurrentLocation(),
 					game.getBoardDimension());
 			boardModel.setValueAt(p, point.y, point.x);
-			boardModel.fireTableCellUpdated(point.y, point.x);
-			point = Utils.getPosition(p.getPreviousLocation(),
-					game.getBoardDimension());
-			if (!Utils.getPosition(p.getCurrentLocation(),
-					game.getBoardDimension()).equals(point)) {
-				if (p.equals(board.getValueAt(point.y, point.x))) {
-					boardModel.setValueAt("", point.y, point.x);
-				}
-				boardModel.fireTableCellUpdated(point.y, point.x);
-			}
 		}
+		boardModel.fireTableDataChanged();
 	}
 
 	protected void sendMoveMessage(int dir) {
 		MoveMessage message = new MoveMessage();
-		message.setPlayerId(playerId);
+		message.setPlayerId(messenger.getPlayerId());
 		message.setDirection(dir);
 		messenger.sendMessage(message, true);
 	}
@@ -182,11 +176,11 @@ public class MainFrame extends JFrame {
 	}
 
 	protected void joinGame() {
-		playerId = Utils.createPlayerId(txtName.getText());
-		JoinGameMessage message = new JoinGameMessage(playerId);
+		messenger.setPlayerId(Utils.createPlayerId(txtName.getText()));
+		JoinGameMessage message = new JoinGameMessage(messenger.getPlayerId());
 		String str = txtServer.getText().trim();
 		if (str.isEmpty()) {
-			str = "localhost" + Utils.LISTEN_PORT;
+			str = "localhost:" + Utils.LISTEN_PORT;
 		}
 		messenger.setServerIp(str);
 		messenger.sendMessage(message, true);

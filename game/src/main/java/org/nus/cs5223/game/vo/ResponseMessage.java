@@ -7,6 +7,15 @@ public class ResponseMessage extends Message {
 	private Game game;
 	private String serverIp;
 	private String backupIp;
+	private Message originMessage;
+
+	public Message getOriginMessage() {
+		return originMessage;
+	}
+
+	public void setOriginMessage(Message originMessage) {
+		this.originMessage = originMessage;
+	}
 
 	public String getServerIp() {
 		return serverIp;
@@ -24,11 +33,13 @@ public class ResponseMessage extends Message {
 		this.backupIp = backupIp;
 	}
 
-	public ResponseMessage(Game game, String serverIp, String backupIp) {
+	public ResponseMessage(Game game, String serverIp, String backupIp,
+			Message message) {
 		super();
 		this.game = game;
 		this.serverIp = serverIp;
 		this.backupIp = backupIp;
+		this.originMessage = message;
 	}
 
 	public Game getGame() {

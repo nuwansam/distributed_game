@@ -66,4 +66,10 @@ public class Message implements Serializable {
 		this.originTime = originTime;
 	}
 
+	public boolean equals(Object obj) {
+		if (obj instanceof Message) {
+			return ((Message) obj).getId().equals(getId());
+		}
+		return false;
+	}
 }
