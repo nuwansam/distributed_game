@@ -8,6 +8,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.nus.cs5223.game.dao.Game;
 import org.nus.cs5223.game.vo.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,19 +22,12 @@ public class GameManager {
 
 	private Set<String> messagesReceived;
 
-	private String backupIp="";
+	@Autowired
+	Messenger messenger;
 
 	private int boardDimension, numTreasures;
 	private static final Logger log = Logger.getLogger(GameManager.class);
 	private Game game;
-
-	public String getBackupIp() {
-		return backupIp;
-	}
-
-	public void setBackupIp(String backupIp) {
-		this.backupIp = backupIp;
-	}
 
 	public void setGame(Game game) {
 		this.game = game;

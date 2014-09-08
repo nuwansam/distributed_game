@@ -62,12 +62,12 @@ public class WorkerThread implements Runnable {
 				game.addPlayer(message.getPlayerId());
 				// second joinee is backup
 				if (gameManager.getGame().getPlayers().size() == 2) {
-					gameManager.setBackupIp(message.getOriginIp() + ":"
+					messenger.setBackupIp(message.getOriginIp() + ":"
 							+ message.getResponsePort());
 				}
 				ResponseMessage reply = new ResponseMessage(
 						gameManager.getGame(), Utils.getMyIp(),
-						gameManager.getBackupIp(), message);
+						messenger.getBackupIp(), message);
 				messenger.sendMessage(message.getOriginIp(),
 						message.getResponsePort(), reply, false);
 			} catch (PlayerAddWindowExpiredException e) {
@@ -80,15 +80,17 @@ public class WorkerThread implements Runnable {
 			mainFrame.updateBoard(((ResponseMessage) message).getGame());
 			messenger.updateResponseTracker(((ResponseMessage) message)
 					.getOriginMessage());
+			messenger.setServerIp(((ResponseMessage) message).getServerIp());
+			messenger.setBackupIp(((ResponseMessage) message).getBackupIp());
 		} else if (message instanceof MoveMessage) {
 			Game game = gameManager.getGame();
-			if (Utils.getMyIp().equals(gameManager.getBackupIp())) {
+			if (Utils.getMyIp().equals(messenger.getBackupIp())) {
 				// i was the backup now im getting msgs from others since the
 				// server is down. set this messenger the backup
-				gameManager.setBackupIp(message.getOriginIp() + ":"
+				messenger.setBackupIp(message.getOriginIp() + ":"
 						+ message.getResponsePort());
 				messenger.setServerIp(Utils.getMyIp());
-				messenger.setBackupIp(gameManager.getBackupIp());
+				messenger.setBackupIp(messenger.getBackupIp());
 				if (!gameManager.messageProcessed(message)) {
 					game.movePlayer(message.getPlayerId(),
 							((MoveMessage) message).getDirection());
@@ -97,24 +99,25 @@ public class WorkerThread implements Runnable {
 				// i am the server. just process it
 				game.movePlayer(message.getPlayerId(),
 						((MoveMessage) message).getDirection());
-				if (gameManager.getBackupIp().isEmpty()) {
+				if (messenger.getBackupIp().isEmpty()) {
 					// backup is down. appoint this as the backup
-					gameManager.setBackupIp(message.getOriginIp() + ":"
+					messenger.setBackupIp(message.getOriginIp() + ":"
 							+ message.getResponsePort());
 				}
 			}
-			messenger.sendMessage(gameManager.getBackupIp(),
-					new GameSyncMessage(gameManager.getGame(), message), true);
+			messenger.sendMessage(messenger.getBackupIp(), new GameSyncMessage(
+					gameManager.getGame(), message), true);
 			messenger.sendMessage(message.getOriginIp(), message
 					.getResponsePort(),
 					new ResponseMessage(gameManager.getGame(), Utils.getMyIp(),
-							gameManager.getBackupIp(), message), false);
+							messenger.getBackupIp(), message), false);
 		} else if (message instanceof GameSyncMessage) {
 			// im getting a game sync message. im the backup server
-			gameManager.setBackupIp(Utils.getMyIp());
+			messenger.setBackupIp(Utils.getMyIp());
 			gameManager.setGame(((GameSyncMessage) message).getGame());
 			gameManager.addMessagesReceived(((GameSyncMessage) message)
 					.getLastMessage());
+			messenger.sendMessage(new GameSyncRespMessage(message), false);
 		} else if (message instanceof GameSyncRespMessage) {
 			messenger.updateResponseTracker(((GameSyncRespMessage) message)
 					.getOriginMessage());

@@ -38,7 +38,6 @@ public class Messenger {
 	GameManager gameManager;
 	private String playerId;
 
-	
 	public String getPlayerId() {
 		return playerId;
 	}
@@ -60,6 +59,7 @@ public class Messenger {
 	}
 
 	public void setBackupIp(String backupIp) {
+		log.info("setting backup in " + Utils.getMyIp() + " to " + backupIp);
 		this.backupIp = backupIp;
 	}
 
@@ -83,9 +83,9 @@ public class Messenger {
 
 	private void scheduleNoMoveMsgSend() {
 		Timer timer = new Timer();
-		Calendar c= Calendar.getInstance();
+		Calendar c = Calendar.getInstance();
 		c.add(Calendar.SECOND, 25);
-		Date date=c.getTime();
+		Date date = c.getTime();
 		TimerTask task = new TimerTask() {
 
 			@Override
@@ -93,7 +93,7 @@ public class Messenger {
 				sendNoMoveMsg();
 			}
 		};
-		 timer.scheduleAtFixedRate(task, date, 25000);
+		// timer.scheduleAtFixedRate(task, date, 25000);
 
 	}
 
@@ -116,13 +116,18 @@ public class Messenger {
 						// backup is down. im the server and my game sync
 						// message
 						// didnt get a response
-						gameManager.setBackupIp("");
+						setBackupIp("");
 					}
 					// no response. server is down
 					serverIp = backupIp;
+					log.info("Changing server IP to: " + serverIp);
 					log.info("Resending message: " + message.getId());
 					sendMessage(message, true);
-					it.remove();
+					try {
+						it.remove();
+					} catch (Exception e) {
+						log.info("Update exception in " + Utils.getMyIp());
+					}
 				}
 			}
 		}
@@ -130,7 +135,7 @@ public class Messenger {
 
 	public void sendMessage(Message message, boolean checkReply) {
 		if (serverIp == null || serverIp.isEmpty()) {
-			serverIp = "localhost:" + Utils.LISTEN_PORT;
+			serverIp = Utils.getMyIp();
 		}
 		String[] strs = serverIp.split(":");
 		log.info("SERVER IP:" + serverIp);
@@ -142,26 +147,25 @@ public class Messenger {
 		if (message instanceof JoinGameMessage) {
 			scheduleNoMoveMsgSend();
 		}
-
+		log.info("Sending message: my IP: " + Utils.getMyIp() + " serverIP: "
+				+ serverIp + " Backup: " + backupIp + " to " + ip + ":" + port);
 		Socket socket;
 		String obj = Utils.toJson(message);
 		String messageType = getMessageType(message);
 		String str = messageType + "|" + obj;
 		log.info("Message type: " + messageType);
 		try {
-			socket = new Socket(ip, port);
-			DataOutputStream dOut = new DataOutputStream(
-					socket.getOutputStream());
-			dOut.writeUTF(str);
-			dOut.flush();
 			if (checkReply) {
 				synchronized (responseTracked) {
 					responseTracked.add(message);
 				}
 			}
-		} catch (UnknownHostException e) {
-			log.error(e);
-		} catch (IOException e) {
+			socket = new Socket(ip, port);
+			DataOutputStream dOut = new DataOutputStream(
+					socket.getOutputStream());
+			dOut.writeUTF(str);
+			dOut.flush();
+		} catch (Exception e) {
 			log.error(e);
 		}
 	}
@@ -170,10 +174,6 @@ public class Messenger {
 		synchronized (responseTracked) {
 			log.info("Removing msg: " + message.getId());
 			responseTracked.remove(message);
-		}
-		if (message instanceof ResponseMessage) {
-			setServerIp(((ResponseMessage) message).getServerIp());
-			setBackupIp(((ResponseMessage) message).getBackupIp());
 		}
 	}
 

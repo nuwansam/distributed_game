@@ -24,7 +24,7 @@ public class RequestDispatcher extends Thread {
 
 	@Autowired
 	MainFrame mainFrame;
-	
+
 	@Autowired
 	ApplicationContext applicationContext;
 
@@ -44,7 +44,8 @@ public class RequestDispatcher extends Thread {
 				String[] strs = str.split("\\|");
 				String messageType = strs[0];
 				String obj = strs[1];
-				String msg = "Received: " + messageType + " message. " + obj;
+				String msg = "Received: " + messageType + " at : "
+						+ Utils.getMyIp() + " message. " + obj;
 				log.info(msg);
 				mainFrame.addLog(msg);
 				Message message = (Message) Utils.fromJson(obj, messageType);

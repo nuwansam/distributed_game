@@ -3,6 +3,7 @@ package org.nus.cs5223.game.core;
 import javax.swing.JFrame;
 
 import org.nus.cs5223.game.ui.MainFrame;
+import org.nus.cs5223.game.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,7 @@ public class App {
 	}
 
 	private void init(String[] args) {
+		Utils.LISTEN_PORT = Integer.parseInt(args[2]);
 		mainFrame.createUI();
 		gameFactory.setBoardDimension(Integer.parseInt(args[0]));
 		gameFactory.setNumTreasures(Integer.parseInt(args[1]));

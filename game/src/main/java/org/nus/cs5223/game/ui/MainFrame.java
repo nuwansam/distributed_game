@@ -45,7 +45,6 @@ public class MainFrame extends JFrame {
 	Messenger messenger;
 
 	public MainFrame() {
-		setTitle("Running on: " + Utils.LISTEN_PORT);
 	}
 
 	public MainFrame(String string) {
@@ -53,14 +52,16 @@ public class MainFrame extends JFrame {
 	}
 
 	public void createUI() {
+		setTitle("Running on: " + Utils.LISTEN_PORT);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		KeyListener keyListener = new keyListener();
 		this.addKeyListener(keyListener);
 		// Add the ubiquitous "Hello World" label.
-		txtName = new JTextField("", 20);
+		txtName = new JTextField(Utils.LISTEN_PORT + "", 20);
 		txtServer = new JTextField("", 20);
 		txtMove = new JTextField("", 20);
+
 		txtLog = new JTextArea(20, 60);
 		board = new JTable();
 		board.addKeyListener(keyListener);
@@ -121,6 +122,8 @@ public class MainFrame extends JFrame {
 
 		// Display the window.
 		this.pack();
+		txtServer.setText(Utils.getMyIp().split(":")[0] + ":9999");
+		this.setSize(400, 400);
 		this.setVisible(true);
 
 	}
@@ -180,7 +183,7 @@ public class MainFrame extends JFrame {
 		JoinGameMessage message = new JoinGameMessage(messenger.getPlayerId());
 		String str = txtServer.getText().trim();
 		if (str.isEmpty()) {
-			str = "localhost:" + Utils.LISTEN_PORT;
+			str = Utils.getMyIp();
 		}
 		messenger.setServerIp(str);
 		messenger.sendMessage(message, true);
