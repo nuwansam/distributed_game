@@ -59,4 +59,8 @@ public class Utils {
 	public static String getMessageId() {
 		return "msg_" + System.currentTimeMillis();
 	}
+
+	public static String getIp(Message message) {
+		return message.getOriginIp() + ":" + message.getResponsePort();
+	}
 }

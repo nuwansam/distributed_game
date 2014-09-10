@@ -99,7 +99,8 @@ public class WorkerThread implements Runnable {
 				// i am the server. just process it
 				game.movePlayer(message.getPlayerId(),
 						((MoveMessage) message).getDirection());
-				if (messenger.getBackupIp().isEmpty()) {
+				if (messenger.getBackupIp().isEmpty()
+						&& !Utils.getMyIp().equals(Utils.getIp(message))) {
 					// backup is down. appoint this as the backup
 					messenger.setBackupIp(message.getOriginIp() + ":"
 							+ message.getResponsePort());

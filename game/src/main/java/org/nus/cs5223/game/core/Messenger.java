@@ -117,16 +117,22 @@ public class Messenger {
 						// message
 						// didnt get a response
 						setBackupIp("");
-					}
-					// no response. server is down
-					serverIp = backupIp;
-					log.info("Changing server IP to: " + serverIp);
-					log.info("Resending message: " + message.getId());
-					sendMessage(message, true);
-					try {
-						it.remove();
-					} catch (Exception e) {
-						log.info("Update exception in " + Utils.getMyIp());
+						try {
+							it.remove();
+						} catch (Exception e) {
+							log.info("Update exception in " + Utils.getMyIp());
+						}
+					} else {
+						// no response. server is down
+						serverIp = backupIp;
+						log.info("Changing server IP to: " + serverIp);
+						log.info("Resending message: " + message.getId());
+						sendMessage(message, true);
+						try {
+							it.remove();
+						} catch (Exception e) {
+							log.info("Update exception in " + Utils.getMyIp());
+						}
 					}
 				}
 			}
